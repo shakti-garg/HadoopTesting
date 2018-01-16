@@ -6,10 +6,19 @@ import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(WordCountUtil.class)
 public class WordCountTest {
 
     MapDriver<Object, Text, Text, IntWritable> mapDriver;
@@ -32,12 +41,11 @@ public class WordCountTest {
     public void testMapper() throws Exception {
         String inputString = "This map feature can be used when This map tasks";
         mapDriver.withInput(new LongWritable(), new Text(inputString));
-        mapDriver.withOutput(new Text("map"), new IntWritable(1));
-        mapDriver.withOutput(new Text("feature"), new IntWritable(1));
-        mapDriver.withOutput(new Text("used"), new IntWritable(1));
-        mapDriver.withOutput(new Text("when"), new IntWritable(1));
-        mapDriver.withOutput(new Text("map"), new IntWritable(1));
-        mapDriver.withOutput(new Text("tasks"), new IntWritable(1));
+
+        mapDriver.withOutput(new Text("This"), new IntWritable(1));
+        mapDriver.withOutput(new Text("can"), new IntWritable(1));
+        mapDriver.withOutput(new Text("be"), new IntWritable(1));
+        mapDriver.withOutput(new Text("This"), new IntWritable(1));
 
         mapDriver.runTest();
     }
@@ -47,10 +55,38 @@ public class WordCountTest {
         List<IntWritable> values = new ArrayList<IntWritable>();
         values.add(new IntWritable(1));
         values.add(new IntWritable(1));
-        reduceDriver.withInput(new Text("map"), values);
-        reduceDriver.withOutput(new Text("map"), new IntWritable(2));
+        reduceDriver.withInput(new Text("This"), values);
+
+        reduceDriver.withOutput(new Text("This"), new IntWritable(2));
 
         reduceDriver.runTest();
+    }
+
+    @Test
+    public void testMapperReducer() throws Exception {
+        String inputString = "This map feature can be used when This map tasks";
+        mapReduceDriver.withInput(new LongWritable(), new Text(inputString));
+
+        mapReduceDriver.withOutput(new Text("This"), new IntWritable(2));
+        mapReduceDriver.withOutput(new Text("be"), new IntWritable(1));
+        mapReduceDriver.withOutput(new Text("can"), new IntWritable(1));
+
+        mapReduceDriver.runTest();
+    }
+
+    @Test
+    public void testMapperReducerWithPowermock() throws Exception {
+        String inputString = "This map feature can be used when This map tasks";
+        mapReduceDriver.withInput(new LongWritable(), new Text(inputString));
+
+        mapReduceDriver.withOutput(new Text("This"), new IntWritable(2));
+        mapReduceDriver.withOutput(new Text("be"), new IntWritable(1));
+        mapReduceDriver.withOutput(new Text("can"), new IntWritable(1));
+
+        PowerMockito.mockStatic(WordCountUtil.class);
+        when(WordCountUtil.getStopList()).thenReturn(new ArrayList<String>(Arrays.asList("a","the","this","it","there","can","be")));
+
+        mapReduceDriver.runTest();
     }
 
 }

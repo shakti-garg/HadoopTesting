@@ -21,15 +21,13 @@ public class WordCount {
 
         private final static IntWritable one = new IntWritable(1);
         private Text word = new Text();
-        List stopList = new ArrayList<String>(Arrays.asList("a","the","this","it","there","can","be"));
-
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             while (itr.hasMoreTokens()) {
                 String tok = itr.nextToken();
-                if (stopList.contains(tok.toLowerCase())) {
+                if (WordCountUtil.getStopList().contains(tok.toLowerCase())) {
                     System.out.println(tok);
                     word.set(tok);
                     context.write(word, one);
