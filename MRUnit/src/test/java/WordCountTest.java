@@ -30,11 +30,14 @@ public class WordCountTest {
 
         WordCount.TokenizerMapper mapper = new WordCount.TokenizerMapper();
         WordCount.IntSumReducer reducer = new WordCount.IntSumReducer();
+        WordCount.IntSumReducer combiner = new WordCount.IntSumReducer();
 
 
         mapDriver = MapDriver.newMapDriver(mapper);
         reduceDriver = ReduceDriver.newReduceDriver(reducer);
+
         mapReduceDriver = MapReduceDriver.newMapReduceDriver(mapper, reducer);
+        mapReduceDriver.setCombiner(combiner);
     }
 
     @Test
